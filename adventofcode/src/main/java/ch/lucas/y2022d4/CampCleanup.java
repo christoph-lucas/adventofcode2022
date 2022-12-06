@@ -44,28 +44,17 @@ public class CampCleanup {
         return new Pair(new Assignment(s.split(",")[0]), new Assignment(s.split(",")[1]));
     }
 
-    private static final class Pair<T> {
-        public T first;
-        public T second;
-
-        public Pair(T first, T second) {
-            this.first = first;
-            this.second = second;
-        }
-
+    private record Pair<T>(T first, T second) {
         @Override
         public String toString() {
             return "(" + first.toString() + ", " + second.toString() + ")";
         }
     }
 
-    private static final class Assignment {
-        public int start;
-        public int end;
+    private record Assignment(int start, int end) {
 
         public Assignment(String s) {
-            start = Integer.valueOf(s.split("-")[0]);
-            end = Integer.valueOf(s.split("-")[1]);
+            this(Integer.valueOf(s.split("-")[0]), Integer.valueOf(s.split("-")[1]));
         }
 
         public boolean contains(Assignment other) {
