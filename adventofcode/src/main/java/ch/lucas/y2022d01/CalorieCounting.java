@@ -6,15 +6,13 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import static java.util.stream.Collectors.toList;
-
 public class CalorieCounting {
 
     private final List<Integer> foodItems;
 
     public CalorieCounting(List<String> values) {
         foodItems = values.stream().map(it -> it.trim())
-                .map(it -> it.length() > 0 ? Integer.valueOf(it) : -1).collect(toList());
+                .map(it -> it.length() > 0 ? Integer.valueOf(it) : -1).toList();
     }
 
     public static void main(String[] args) {

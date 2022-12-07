@@ -5,14 +5,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 public class CampCleanup {
 
     private final List<Pair<Assignment>> pairs;
 
     public CampCleanup(List<String> values) {
-        pairs = values.stream().filter(it -> it.length() > 0).map(this::parse).collect(toList());
+        pairs = values.stream().filter(it -> it.length() > 0).map(this::parse).toList();
         System.out.println(pairs);
     }
 

@@ -9,14 +9,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toCollection;
 
 public class RucksackReorganization {
 
     private final List<String> rucksacks;
 
     public RucksackReorganization(List<String> values) {
-        rucksacks = values.stream().filter(it -> it.length() > 0).collect(toList());
+        rucksacks = values.stream().filter(it -> it.length() > 0).toList();
     }
 
     public static void main(String[] args) {

@@ -5,15 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import static java.util.stream.Collectors.toList;
-
 public class TuningTrouble {
 
     private final Character[] signals;
 
     public TuningTrouble(String stream) {
         signals = new Character[stream.length()];
-        stream.chars().mapToObj(e -> (char) e).collect(toList()).toArray(signals);
+        stream.chars().mapToObj(e -> (char) e).toList().toArray(signals);
         System.out.println(Arrays.toString(signals));
     }
 

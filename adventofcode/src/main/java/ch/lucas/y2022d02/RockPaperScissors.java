@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static java.util.stream.Collectors.toList;
-
 public class RockPaperScissors {
 
     private static final Map<Character, Integer> POINTS_PER_SYMBOL = Map.of(
@@ -39,7 +37,7 @@ public class RockPaperScissors {
     private final List<String> rounds;
 
     public RockPaperScissors(List<String> values) {
-        rounds = values.stream().filter(it -> it.length() > 0).collect(toList());
+        rounds = values.stream().filter(it -> it.length() > 0).toList();
     }
 
     public static void main(String[] args) {

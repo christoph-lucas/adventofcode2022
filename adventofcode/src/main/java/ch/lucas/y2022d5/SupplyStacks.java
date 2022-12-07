@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
-import static java.util.stream.Collectors.toList;
-
 public class SupplyStacks {
 
     private final List<Move> moves;
@@ -16,7 +14,7 @@ public class SupplyStacks {
     private final Stack<Character>[] stacks;
 
     public SupplyStacks(List<String> values) {
-        moves = values.stream().filter(it -> it.length() > 0).map(Move::new).collect(toList());
+        moves = values.stream().filter(it -> it.length() > 0).map(Move::new).toList();
         System.out.println("Moves: " + moves);
         stacks = generateStacks();
     }
