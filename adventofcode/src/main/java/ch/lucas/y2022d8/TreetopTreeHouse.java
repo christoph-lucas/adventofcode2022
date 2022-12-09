@@ -84,6 +84,7 @@ public class TreetopTreeHouse {
         return curMax;
     }
 
+    // This is a straight forward O(n^3) solution. O(n^2) is possible but more cumbersome.
     public int maxScenicScore() {
         int max = -1;
         for (int r = 0; r < n_rows; r++) {
