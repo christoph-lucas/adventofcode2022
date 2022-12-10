@@ -36,13 +36,12 @@ public class CathodeRayTube {
     public List<Integer> getSignalStrengthsAt(List<Integer> cycleNumbers) {
         Queue<Integer> signalChecks = cycleNumbers.stream().sorted().collect(toCollection(() -> new LinkedList<>()));
         List<Integer> result = new ArrayList<>();
-        BiConsumer<Integer, Integer> getSignalStrengths = (Integer cycle, Integer x) -> {
+        runProgram(cycleNumbers.get(cycleNumbers.size() - 1), (Integer cycle, Integer x) -> {
             if (signalChecks.peek().equals(cycle)) {
                 signalChecks.poll();
                 result.add(cycle * x);
             }
-        };
-        runProgram(cycleNumbers.get(cycleNumbers.size() - 1), getSignalStrengths);
+        });
         return result;
     }
 
@@ -55,14 +54,13 @@ public class CathodeRayTube {
                 crt[i][j] = '.';
             }
         }
-        BiConsumer<Integer, Integer> updateCrt = (Integer cycle, Integer x) -> {
+        runProgram(240, (Integer cycle, Integer x) -> {
             int curX = (cycle - 1) % width;
             int curY = (cycle - 1) / width;
             if (curX >= x - 1 && curX <= x + 1) {
                 crt[curY][curX] = '#';
             }
-        };
-        runProgram(240, updateCrt);
+        });
         prettyPrint(crt);
     }
 
