@@ -3,11 +3,18 @@ package ch.lucas.y2022d19;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Most likely not the correct, or at least not the full answer! It computes the result correctly, but is mostly a
+ * brute force approach with some hueristics to improve run time.
+ */
 public class NotEnoughMinerals {
 
     private final List<Blueprint> blueprints;
@@ -20,24 +27,29 @@ public class NotEnoughMinerals {
     public static void main(String[] args) {
         System.out.println("Not Enough Minerals\n");
         try {
-            List<String> input = Files.readAllLines(Paths.get("src/main/resources/input_y22d19_ex.txt"));
+            List<String> input = Files.readAllLines(Paths.get("src/main/resources/input_y22d19.txt"));
             NotEnoughMinerals nem = new NotEnoughMinerals(input);
-            nem.evaluateBlueprints(21);
+            System.out.println("Sum of Quality Levels: " + nem.evaluateBlueprints(24));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void evaluateBlueprints(int minutes) {
+    public int evaluateBlueprints(int minutes) {
         State init = new State(
                 new Robots(1, 0, 0, 0),
                 new Resources(0, 0, 0, 0),
                 minutes
         );
+
+        int sumQualityLevels = 0;
         for (Blueprint blueprint : blueprints) {
+            Instant start = Instant.now();
             int res = simulate(blueprint, init);
-            System.out.println("Blueprint " + blueprint.idx + " has a maximum of " + res + " geode capacity.");
+            sumQualityLevels += blueprint.idx * res;
+            System.out.println("Blueprint " + blueprint.idx + " has a maximum of " + res + " geode capacity. Elapsed time: " + Duration.between(start, Instant.now()).toSeconds() + "s");
         }
+        return sumQualityLevels;
     }
 
     private int simulate(Blueprint blueprint, State s) {
@@ -64,10 +76,25 @@ public class NotEnoughMinerals {
 
     private List<Action> getPossibleActions(Blueprint bp, State s) {
         List<Action> res = new ArrayList<>();
-        if (canBuild(bp.geodeBot, s.resources)) res.add(Action.BUILD_GEODE_BOT);
-        if (canBuild(bp.obsidianBot, s.resources)) res.add(Action.BUILD_OBSIDIAN_BOT);
-        if (canBuild(bp.clayBot, s.resources)) res.add(Action.BUILD_CLAY_BOT);
-        if (canBuild(bp.oreBot, s.resources)) res.add(Action.BUILD_ORE_BOT);
+        if (canBuild(bp.geodeBot, s.resources)) {
+            res.add(Action.BUILD_GEODE_BOT);
+            return res; // assume: if geode bot possible, that is the best action
+        }
+        if (canBuild(bp.obsidianBot, s.resources)) {
+            int capacity = s.resources.obsidian + (s.robots.obsidianBots * s.minRemaining);
+            int maxConsumption = bp.maxObsidian() * s.minRemaining;
+            if (maxConsumption > capacity) res.add(Action.BUILD_OBSIDIAN_BOT);
+        }
+        if (canBuild(bp.clayBot, s.resources)) {
+            int capacity = s.resources.clay + (s.robots.clayBots * s.minRemaining);
+            int maxConsumption = bp.maxClay() * s.minRemaining;
+            if (maxConsumption > capacity) res.add(Action.BUILD_CLAY_BOT);
+        }
+        if (canBuild(bp.oreBot, s.resources)) {
+            int capacity = s.resources.ore + (s.robots.oreBots * s.minRemaining);
+            int maxConsumption = bp.maxOre() * s.minRemaining;
+            if (maxConsumption > capacity) res.add(Action.BUILD_ORE_BOT);
+        }
         res.add(Action.WAIT);
         return res;
     }
@@ -149,6 +176,17 @@ public class NotEnoughMinerals {
             return new Blueprint(idx, ore, clay, obsidian, geode);
         }
 
+        public int maxOre() {
+            return Stream.of(oreBot.ore, clayBot.ore, obsidianBot.ore, geodeBot.ore).max(Integer::compareTo).orElseThrow();
+        }
+
+        public int maxClay() {
+            return Stream.of(oreBot.clay, clayBot.clay, obsidianBot.clay, geodeBot.clay).max(Integer::compareTo).orElseThrow();
+        }
+
+        public int maxObsidian() {
+            return Stream.of(oreBot.obsidian, clayBot.obsidian, obsidianBot.obsidian, geodeBot.obsidian).max(Integer::compareTo).orElseThrow();
+        }
     }
 
     public record Robot(int ore, int clay, int obsidian) {
