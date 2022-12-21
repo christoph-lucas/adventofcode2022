@@ -6,18 +6,22 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
 /**
  * Most likely not the correct, or at least not the full answer! It computes the result correctly, but is mostly a
- * brute force approach with some hueristics to improve run time.
+ * brute force approach with some heuristics to improve run time.
  */
 public class NotEnoughMinerals {
 
     private final List<Blueprint> blueprints;
+
+    private Map<State, Integer> cache;
 
     public NotEnoughMinerals(List<String> blueprintsRaw) {
         blueprints = blueprintsRaw.stream().map(Blueprint::from).collect(toList());
@@ -29,13 +33,13 @@ public class NotEnoughMinerals {
         try {
             List<String> input = Files.readAllLines(Paths.get("src/main/resources/input_y22d19.txt"));
             NotEnoughMinerals nem = new NotEnoughMinerals(input);
-            System.out.println("Sum of Quality Levels: " + nem.evaluateBlueprints(24));
+            nem.evaluateBlueprints(32, 3);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public int evaluateBlueprints(int minutes) {
+    public void evaluateBlueprints(int minutes, int limitBlueprints) {
         State init = new State(
                 new Robots(1, 0, 0, 0),
                 new Resources(0, 0, 0, 0),
@@ -43,25 +47,40 @@ public class NotEnoughMinerals {
         );
 
         int sumQualityLevels = 0;
-        for (Blueprint blueprint : blueprints) {
+        int productNumberOfGeodes = 1;
+        for (Blueprint blueprint : blueprints.stream().limit(limitBlueprints).toList()) {
             Instant start = Instant.now();
-            int res = simulate(blueprint, init);
+            cache = new HashMap<>();
+            int res = simulate(blueprint, init, 0);
             sumQualityLevels += blueprint.idx * res;
+            productNumberOfGeodes *= res;
             System.out.println("Blueprint " + blueprint.idx + " has a maximum of " + res + " geode capacity. Elapsed time: " + Duration.between(start, Instant.now()).toSeconds() + "s");
         }
-        return sumQualityLevels;
+        System.out.println("Sum of Quality Levels: " + sumQualityLevels);
+        System.out.println("Product of number of Geodes: " + productNumberOfGeodes);
     }
 
-    private int simulate(Blueprint blueprint, State s) {
+    private int simulate(Blueprint blueprint, State s, int knownMax) {
         int max = s.resources.geode;
         if (s.minRemaining == 0) return max;
+        if (cache.containsKey(s)) return cache.get(s);
+        if (bestConceivableGeodeNumber(s) <= knownMax) return knownMax;
 
         State sNext = s.updateOneTimeStep(); // let the bots collect
         for (Action a : getPossibleActions(blueprint, s)) { // determine possible actions based on state at beginning of round
             State sNextWithAction = apply(a, sNext, blueprint);
-            max = Math.max(max, simulate(blueprint, sNextWithAction));
+            max = Math.max(max, simulate(blueprint, sNextWithAction, max));
         }
+        cache.put(s, max);
         return max;
+    }
+
+    private int bestConceivableGeodeNumber(State s) {
+        int res = s.resources.geode + (s.robots.geodeBots * s.minRemaining);
+        for (int i = s.minRemaining - 1; i > 0; i--) {
+            res += i;
+        }
+        return res;
     }
 
     private State apply(Action a, State s, Blueprint bp) {
