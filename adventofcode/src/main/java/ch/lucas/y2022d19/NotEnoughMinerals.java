@@ -33,6 +33,7 @@ public class NotEnoughMinerals {
         try {
             List<String> input = Files.readAllLines(Paths.get("src/main/resources/input_y22d19.txt"));
             NotEnoughMinerals nem = new NotEnoughMinerals(input);
+            nem.evaluateBlueprints(24, 100);
             nem.evaluateBlueprints(32, 3);
         } catch (IOException e) {
             e.printStackTrace();
