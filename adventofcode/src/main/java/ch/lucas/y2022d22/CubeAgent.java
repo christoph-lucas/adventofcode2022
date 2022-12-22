@@ -1,10 +1,8 @@
 package ch.lucas.y2022d22;
 
-import ch.lucas.y2022d22.MonkeyMap.Direction;
+import static ch.lucas.y2022d22.Direction.RIGHT;
 
-import static ch.lucas.y2022d22.MonkeyMap.Direction.RIGHT;
-
-public class CubeAgent {
+public class CubeAgent implements Agent<CubeCoordinates> {
 
     public CubeCoordinates coordinates;
     public Direction direction;
@@ -23,12 +21,20 @@ public class CubeAgent {
         };
     }
 
+    public void moveTo(CubeCoordinates c) {
+        this.coordinates = c;
+    }
+
     public void turnLeft() {
         direction = direction.turnLeft();
     }
 
     public void turnRight() {
         direction = direction.turnRight();
+    }
+
+    public Direction direction() {
+        return direction;
     }
 
     @Override

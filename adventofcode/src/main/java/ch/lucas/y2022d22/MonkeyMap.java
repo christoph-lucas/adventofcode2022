@@ -1,172 +1,91 @@
 package ch.lucas.y2022d22;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-/**
- * The two methods to go over the commands and move the agent could (and should) be unified, by having a generic Agent
- * for either Position or CubeCoordinates. This refactoring is left to the reader as an exercise ;).
- */
-public class MonkeyMap {
 
-    private final MyMap map;
-    private final String commands;
+public class MonkeyMap implements MappingAid<Position> {
 
-    public MonkeyMap(List<String> input) {
-        List<String> mapData = new ArrayList<>();
-        Iterator<String> inputIterator = input.iterator();
-        while (inputIterator.hasNext()) {
-            String line = inputIterator.next();
-            if (line.length() > 0) {
-                mapData.add(line);
-            } else {
-                break;
+    public char[][] mapData;
+
+    public MonkeyMap(char[][] mapData) {
+        this.mapData = mapData;
+    }
+
+    public static MonkeyMap from(List<String> input) {
+        int height = input.size();
+        int width = input.stream().map(String::length).max(Integer::compareTo).orElseThrow();
+        char[][] mapData = new char[height + 2][width + 2];
+
+        for (int col = 0; col < mapData[0].length; col++) {
+            mapData[0][col] = ' ';
+            mapData[mapData.length - 1][col] = ' ';
+        }
+
+        int row = 1;
+        for (String rowData : input) {
+            mapData[row][0] = ' ';
+            int col = 1;
+            for (char c : rowData.toCharArray()) mapData[row][col++] = c;
+            for (; col < mapData[row].length; col++) mapData[row][col] = ' ';
+            row++;
+        }
+
+        return new MonkeyMap(mapData);
+    }
+
+    public Position getInitialPosition() {
+        int col = 0;
+        while (mapData[1][col] != '.') col++;
+        return new Position(col, 1);
+    }
+
+    public Position getNextPosition(Position p, Direction dir) {
+        int y = p.y();
+        int x = p.x();
+        switch (dir) {
+            case UP:
+                if (mapData[y - 1][x] != ' ') {
+                    return new Position(x, y - 1);
+                }
+                while (mapData[y + 1][x] != ' ') y++;
+                return new Position(x, y);
+            case DOWN:
+                if (mapData[y + 1][x] != ' ') {
+                    return new Position(x, y + 1);
+                }
+                while (mapData[y - 1][x] != ' ') y--;
+                return new Position(x, y);
+            case RIGHT:
+                if (mapData[y][x + 1] != ' ') {
+                    return new Position(x + 1, y);
+                }
+                while (mapData[y][x - 1] != ' ') x--;
+                return new Position(x, y);
+            case LEFT:
+                if (mapData[y][x - 1] != ' ') {
+                    return new Position(x - 1, y);
+                }
+                while (mapData[y][x + 1] != ' ') x++;
+                return new Position(x, y);
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    public boolean isWall(Position p) {
+        return mapData[p.y()][p.x()] == '#';
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        for (int x = 0; x < mapData.length; x++) {
+            for (int y = 0; y < mapData[0].length; y++) {
+                res.append(mapData[x][y]);
             }
+            res.append("\n");
         }
-        map = MyMap.from(mapData);
-        System.out.println(map);
-        commands = inputIterator.next();
+        return res.toString();
     }
 
-    public static void main(String[] args) {
-        System.out.println("Monkey Map\n");
-        try {
-            List<String> input = Files.readAllLines(Paths.get("src/main/resources/input_y22d22.txt"));
-            MonkeyMap mm = new MonkeyMap(input);
-//            mm.providePassword(); // 11464
-            mm.providePassword2(50); // 197122
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void providePassword() {
-        Agent agent = new Agent(map.getInitialPosition());
-
-        int cmdPtr = 0;
-        while (cmdPtr < commands.length()) {
-            System.out.println(agent);
-            if (!Character.isDigit(commands.charAt(cmdPtr))) {
-                switch (commands.charAt(cmdPtr)) {
-                    case 'R' -> agent.turnRight();
-                    case 'L' -> agent.turnLeft();
-                    default -> throw new IllegalArgumentException();
-                }
-                cmdPtr++;
-            } else {
-                int i = cmdPtr;
-                while (i < commands.length() && Character.isDigit(commands.charAt(i))) i++;
-                int steps = Integer.parseInt(commands.substring(cmdPtr, i));
-                System.out.println("Command says move " + steps + " " + agent.direction);
-                for (int j = 0; j < steps; j++) {
-                    Position next = map.getNextPosition(agent.position, agent.direction);
-                    if (!map.isWall(next)) {
-                        agent.position = next;
-                    } else {
-                        break;
-                    }
-                }
-                cmdPtr = i;
-            }
-        }
-        int password = 1000 * agent.position.y + 4 * agent.position.x;
-        switch (agent.direction) {
-            case UP -> password += 3;
-            case DOWN -> password += 1;
-            case LEFT -> password += 2;
-            case RIGHT -> password += 0;
-        }
-        System.out.println("The password is " + password);
-        System.out.println(agent);
-    }
-
-    public void providePassword2(int cubeSize) {
-        MonkeyCube c = new MonkeyCube(map, cubeSize);
-        CubeAgent agent = new CubeAgent(c.getInitialCoordinates());
-
-        int cmdPtr = 0;
-        while (cmdPtr < commands.length()) {
-            System.out.println(agent);
-            if (!Character.isDigit(commands.charAt(cmdPtr))) {
-                switch (commands.charAt(cmdPtr)) {
-                    case 'R' -> agent.turnRight();
-                    case 'L' -> agent.turnLeft();
-                    default -> throw new IllegalArgumentException();
-                }
-                cmdPtr++;
-            } else {
-                int i = cmdPtr;
-                while (i < commands.length() && Character.isDigit(commands.charAt(i))) i++;
-                int steps = Integer.parseInt(commands.substring(cmdPtr, i));
-                System.out.println("Command says move " + steps + " " + agent.direction);
-                for (int j = 0; j < steps; j++) {
-                    CubeCoordinates next = agent.wouldMoveTo();
-                    if (!c.isWall(next)) {
-                        agent.coordinates = next;
-                    } else {
-                        break;
-                    }
-                }
-                cmdPtr = i;
-            }
-        }
-        System.out.println(agent);
-        System.out.println(c.getMapPosition(agent.coordinates));
-        System.out.println();
-        c.printPassword(agent);
-    }
-
-    public enum Direction {
-        UP, DOWN, LEFT, RIGHT;
-
-        public Direction turnLeft() {
-            return switch (this) {
-                case UP -> LEFT;
-                case LEFT -> DOWN;
-                case DOWN -> RIGHT;
-                case RIGHT -> UP;
-            };
-        }
-
-        public Direction turnRight() {
-            return switch (this) {
-                case UP -> RIGHT;
-                case RIGHT -> DOWN;
-                case DOWN -> LEFT;
-                case LEFT -> UP;
-            };
-        }
-
-        public int passwordPart() {
-            return switch (this) {
-                case UP -> 3;
-                case DOWN -> 1;
-                case LEFT -> 2;
-                case RIGHT -> 0;
-            };
-        }
-
-    }
-
-    public record Position(int x, int y) {
-        public Position moveRight() {
-            return new Position(x + 1, y);
-        }
-
-        public Position moveLeft() {
-            return new Position(x - 1, y);
-        }
-
-        public Position moveDown() {
-            return new Position(x, y + 1);
-        }
-
-        public Position moveUp() {
-            return new Position(x, y - 1);
-        }
-    }
 }

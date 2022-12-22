@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class CubeCoordinates {
+public class CubeCoordinates implements FlatMovable<CubeCoordinates> {
 
     private static final Function<Integer, Integer> inc = x -> x + 1;
     private static final Function<Integer, Integer> dec = x -> x - 1;

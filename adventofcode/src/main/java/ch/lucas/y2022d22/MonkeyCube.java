@@ -1,13 +1,11 @@
 package ch.lucas.y2022d22;
 
 import ch.lucas.y2022d22.CubeCoordinates.Axis;
-import ch.lucas.y2022d22.MonkeyMap.Direction;
-import ch.lucas.y2022d22.MonkeyMap.Position;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static ch.lucas.y2022d22.MonkeyMap.Direction.*;
+import static ch.lucas.y2022d22.Direction.*;
 
 /**
  * The cube does the actual folding of the map into a cube so that afterwards the agent can move actually in 3D.
@@ -23,14 +21,14 @@ import static ch.lucas.y2022d22.MonkeyMap.Direction.*;
  * be changed when crossing an edge. So, I get the right coordinate, but to determine the original direction, I have
  * to move the agent a bit and see how he would move on the original map. A little hack, but well...
  */
-public class MonkeyCube {
+public class MonkeyCube implements MappingAid<CubeCoordinates> {
 
     private final Set<Position> upperLeftCorners = new HashSet<>();
     private final Tile[][][] cube;
     private final int n;
     private final char[][] map;
 
-    public MonkeyCube(MyMap map, int n) {
+    public MonkeyCube(MonkeyMap map, int n) {
         this.map = map.mapData;
         cube = new Tile[n + 2][n + 2][n + 2];
         this.n = n;
@@ -72,13 +70,13 @@ public class MonkeyCube {
         a.turnLeft();
         a.turnLeft();
         if (curMapPos.moveRight().equals(nextMapPos) || curMapPos.moveLeft().equals(prevMapPos)) {
-            System.out.println("The password is: " + (password + RIGHT.passwordPart()) + ". Correct direction is RIGHT.");
+            System.out.println("The password for Part 2 is: " + (password + RIGHT.passwordPart()) + ". Correct direction is RIGHT.");
         } else if (curMapPos.moveLeft().equals(nextMapPos) || curMapPos.moveRight().equals(prevMapPos)) {
-            System.out.println("The password is: " + (password + LEFT.passwordPart()) + ". Correct direction is LEFT.");
+            System.out.println("The password for Part 2 is: " + (password + LEFT.passwordPart()) + ". Correct direction is LEFT.");
         } else if (curMapPos.moveDown().equals(nextMapPos) || curMapPos.moveUp().equals(prevMapPos)) {
-            System.out.println("The password is: " + (password + DOWN.passwordPart()) + ". Correct direction is DOWN.");
+            System.out.println("The password for Part 2 is: " + (password + DOWN.passwordPart()) + ". Correct direction is DOWN.");
         } else if (curMapPos.moveUp().equals(nextMapPos) || curMapPos.moveDown().equals(prevMapPos)) {
-            System.out.println("The password is: " + (password + UP.passwordPart()) + ". Correct direction is UP.");
+            System.out.println("The password for Part 2 is: " + (password + UP.passwordPart()) + ". Correct direction is UP.");
         } else {
             System.out.println("Cannot determine the original direction. Going for trial and error...");
             for (Direction d : Direction.values()) {
@@ -110,7 +108,7 @@ public class MonkeyCube {
             mapRowStart = mapRowStart.moveDown();
         }
 
-        plotSide(cubeCorner);
+//        plotSide(cubeCorner);
 
         if (upperLeft.x() - n > 0 && map[upperLeft.y()][upperLeft.x() - n] != ' ') {
             System.out.println("Moving to Left Neighbour!");

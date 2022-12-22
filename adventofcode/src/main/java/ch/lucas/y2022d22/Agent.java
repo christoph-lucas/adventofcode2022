@@ -1,40 +1,13 @@
 package ch.lucas.y2022d22;
 
-import ch.lucas.y2022d22.MonkeyMap.Direction;
-import ch.lucas.y2022d22.MonkeyMap.Position;
+public interface Agent<T extends FlatMovable<T>> {
+    T wouldMoveTo();
 
-import static ch.lucas.y2022d22.MonkeyMap.Direction.*;
+    void moveTo(T p);
 
-public class Agent {
+    void turnLeft();
 
-    public Position position;
-    public Direction direction;
+    void turnRight();
 
-    public Agent(Position position) {
-        this.position = position;
-        this.direction = RIGHT;
-    }
-
-    public void turnLeft() {
-        direction = switch (direction) {
-            case UP -> LEFT;
-            case LEFT -> DOWN;
-            case DOWN -> RIGHT;
-            case RIGHT -> UP;
-        };
-    }
-
-    public void turnRight() {
-        direction = switch (direction) {
-            case UP -> RIGHT;
-            case RIGHT -> DOWN;
-            case DOWN -> LEFT;
-            case LEFT -> UP;
-        };
-    }
-
-    @Override
-    public String toString() {
-        return "(" + position + ", " + direction + ")";
-    }
+    Direction direction();
 }
